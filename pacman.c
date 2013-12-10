@@ -32,6 +32,8 @@ double horizon = 0;
 double vertical = 0; // The player moves
 int map;
 int title;
+double title_rot = .001;
+bool increase = true;
 
 // Collison
 // Distance between Objects
@@ -148,7 +150,16 @@ void title_loader(int obj)
    glTranslated(5,3,0);
    glScaled(.25,.25,.25);
    //glScaled(.8,.8,.8);
-   glRotatef(-15,0,1,0);
+   if(title_rot <= 10 && title_rot >= -10 && increase == true){
+   increase = true;
+   glRotatef(-15+title_rot,0,1,0);
+   title_rot += .05;
+   }
+   else{
+   increase = false;
+   glRotatef(-15-title_rot,0,1,0);
+   title_rot -= .05;
+   }
    glCallList(obj);
 
 }
