@@ -11,13 +11,13 @@
  */
 #include "CSCIx229.h"
 #include <stdbool.h>
- #include <math.h>
+#include <math.h>
 
 int axes=1;       //  Display axes
 int mode=0;       //  Shader mode
 int move=1;       //  Move light
 int proj=2;       //  Projection type
-int th=0;         //  Azimuth of view angle
+int th=5;         //  Azimuth of view angle
 int ph=0;         //  Elevation of view angle
 int fov=100;       //  Field of view (for perspective)
 double spc=1;     //  Specular intensity
@@ -114,6 +114,7 @@ void pacman_loader(int obj)
          glTranslated(horizon,vertical,0);
       else
          glTranslated(vertical,horizon,0);
+
 //   }
    glScalef(.08,.08,.08);
    //Rotate the Pacman
@@ -144,9 +145,10 @@ void map_loader(int obj)
 }
 void title_loader(int obj)
 {
-   glTranslated(0,0,0);
+   glTranslated(5,3,0);
+   glScaled(.25,.25,.25);
    //glScaled(.8,.8,.8);
-   //glRotatef(90,1,0,0);
+   glRotatef(-15,0,1,0);
    glCallList(obj);
 
 }
@@ -174,6 +176,7 @@ void display()
    //  Perspective - set eye position
    if (proj%2 == 0)
    {
+
       camera_switch = false;
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
@@ -183,12 +186,45 @@ void display()
    //  Pacman View
    else
    {
+      if(north == true){
+      
       camera_switch = true;
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
       double Ez = +2*dim*Cos(th)*Cos(ph);
       //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
       gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);     
+      }
+      else if(west == true){
+      
+      camera_switch = true;
+      double Ex = -2*dim*Sin(th)*Cos(ph);
+      double Ey = +2*dim        *Sin(ph);
+      double Ez = +2*dim*Cos(th)*Cos(ph);
+      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
+      gluLookAt(horizon,vertical-4, 2, vertical,horizon,0 , 90,-Cos(ph),0);
+
+      }
+      else if(east == true){
+      
+      camera_switch = true;
+      double Ex = -2*dim*Sin(th)*Cos(ph);
+      double Ey = +2*dim        *Sin(ph);
+      double Ez = +2*dim*Cos(th)*Cos(ph);
+      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
+      gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);
+
+      }
+      else{
+
+      camera_switch = true;
+      double Ex = -2*dim*Sin(th)*Cos(ph);
+      double Ey = +2*dim        *Sin(ph);
+      double Ez = +2*dim*Cos(th)*Cos(ph);
+      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
+      gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);
+      
+      }
    }
 
    //  Draw light position as sphere (still no lighting here)
