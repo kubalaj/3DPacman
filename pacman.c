@@ -12,8 +12,8 @@
 #include "CSCIx229.h"
 #include <stdbool.h>
 #include <math.h>
-#include "SDL/SDL.h"
-#include "SDL/SDL_mixer.h"
+//#include "SDL/SDL.h"
+//#include "SDL/SDL_mixer.h"
 
 int axes=1;       //  Display axes
 int mode=0;       //  Shader mode
@@ -128,8 +128,10 @@ void pacman_loader(int obj)
       glRotatef(-90,0,0,1);
    if(west == true)
       glRotatef(180,0,1,0);
-   if(camera_switch == true)
+   if(camera_switch == true){
       glRotatef(90,1,0,0);
+      glRotatef(90,0,0,1);
+   }
    glCallList(obj);
 
 
@@ -204,7 +206,7 @@ void display()
    //  Pacman View
    else
    {
-      if(north == true){
+     // if(north == true){
       
       camera_switch = true;
       double Ex = -2*dim*Sin(th)*Cos(ph);
@@ -212,8 +214,8 @@ void display()
       double Ez = +2*dim*Cos(th)*Cos(ph);
       //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
       gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);     
-      }
-      else if(west == true){
+     // }
+     /* else if(west == true){
       
       camera_switch = true;
       double Ex = -2*dim*Sin(th)*Cos(ph);
@@ -242,7 +244,7 @@ void display()
       //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
       gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);
       
-      }
+      }*/
    }
 
    //  Draw light position as sphere (still no lighting here)
