@@ -12,6 +12,8 @@
 #include "CSCIx229.h"
 #include <stdbool.h>
 #include <math.h>
+#include "SDL/SDL.h"
+#include "SDL/SDL_mixer.h"
 
 int axes=1;       //  Display axes
 int mode=0;       //  Shader mode
@@ -32,7 +34,7 @@ double horizon = 0;
 double vertical = 0; // The player moves
 int map;
 int title;
-double title_rot = .001;
+double title_rot = -5;
 bool increase = true;
 
 // Collison
@@ -150,19 +152,21 @@ void title_loader(int obj)
    glTranslated(5,3,0);
    glScaled(.25,.25,.25);
    //glScaled(.8,.8,.8);
-   if(title_rot <= 10 && title_rot >= -10 && increase == true){
-   
+ 
    glRotatef(title_rot,0,1,0);
-   title_rot += 1;
-   increase = true;
+   if(increase == true){
+     title_rot += .03;
    }
    else{
-   increase = false;
-   glRotatef(title_rot,0,1,0);
-   title_rot -= 1;
-      if(title_rot >=10 || title_rot <= -10)
-         increase = true;
+      title_rot -= .03;
    }
+   //Upper Bound and lower Bound for 
+   // Title animation
+   if(title_rot >= -5)
+      increase = false;
+   if(title_rot <= -10)
+      increase = true;
+
    glCallList(obj);
 
 }

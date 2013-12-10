@@ -35,5 +35,5 @@ CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o object.o
 love:
 	@echo "not war?"
 
-#pacman:
-#	./pacman cherry.obj $(OBJ) $(PAC) $(MAP)
+run:
+	./pacman cherry.obj pacman.obj map.obj title.obj
