@@ -2,12 +2,13 @@
  *  3D Pacman
  *  By Paul Kubala 
  *  'p' to switch projections
- *  's' to start/stop light
- *  'a' to toggle axes
+ *  'w' for up
+ *  'a' for left
+ *  's' for down
+ *  'd' for down
+ *  'e' for expert mode
  *  '0' snaps angles to 0,0
  *  arrows to rotate the world
- *  PgUp/PgDn zooms in/out
- *  -/+    change light elevation
  */
 #include "CSCIx229.h"
 #include <stdbool.h>
@@ -22,7 +23,7 @@ int proj=2;       //  Projection type
 int th=5;         //  Azimuth of view angle
 int ph=0;         //  Elevation of view angle
 int fov=100;       //  Field of view (for perspective)
-double spc=1;     //  Specular intensity
+double spc=0;     //  Specular intensity
 double asp=1;     //  Aspect ratio
 double dim=3.0;   //  Size of world
 double scale=1; //  Image scale
@@ -51,6 +52,9 @@ double two_x = 0;
 double two_y = 0;
 double two_z = 0;
 bool map_hit = false;
+bool expert = false;
+double old_hor = 0;
+double old_ver = 0;
 
 // Hold the radius of points
 const RADIUS = 10;
@@ -68,10 +72,7 @@ bool camera_switch = false;
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
-
-
-
-
+//Defining box collider
 static bool is_not_legal(double x, double y, double bx1, double by1, double bx2, double by2, 
                                  double bx3, double by3, double bx4, double by4)
 {
@@ -84,22 +85,20 @@ static bool is_not_legal(double x, double y, double bx1, double by1, double bx2,
 }
 
 
-
-
-
+// Load Pacman Loader
 void pacman_loader(int obj)
 {  
    //bool is_collision = collision(horizon-3, vertical);
    glColor3f(1,0,0);
    
+      
+   glTranslated(horizon,vertical,0);
 
-
-      if(camera_switch==false)
-         glTranslated(horizon,vertical,0);
-      else
-         glTranslated(vertical,horizon,0);
-   
- 
+    if(map_hit == true && expert == true){
+      for(double i = 0; i>=-100; i-=.1){
+            glTranslated(horizon,vertical-i,0);
+       }  
+   }
 
    glScalef(.055,.055,.055);
    //Rotate the Pacman
@@ -107,35 +106,43 @@ void pacman_loader(int obj)
       glRotatef(90,0,0,1);
    if(south == true)
       glRotatef(-90,0,0,1);
-   if(west == true)
+   if(west == true && camera_switch == false)
       glRotatef(180,0,1,0);
+   if(west == true && camera_switch == true)
+      glRotatef(180,0,0,1);
    if(camera_switch == true){
       glRotatef(90,1,0,0);
-      glRotatef(90,0,0,1);
+      //glRotatef(90,0,0,1);
    }
    glCallList(obj);
 
 
 }
+// Load Cherry
 void cherry_loader(int obj)
 {
    glTranslated(-3,0,0);
    glScaled(.1,.1,.1);
    glCallList(obj);
 }
+// Load map
 void map_loader(int obj)
 {
    glTranslated(-3,0,0);
    glScaled(1.73,1.3,1);
-   if(map_hit == true){
-      for(int i = 0; i < 10; i += .01){
+   if(map_hit == true && expert == true){
+      for(int i = 0; i <= 10; i += 1){
    glRotatef(90+i,1,0,0);
+   }
+   for(int i = 10; i >= 0; i -= 1){
+   glRotatef(90-i,1,0,0);
    }
    }
    else
       glRotatef(90,1,0,0);
    glCallList(obj);
 }
+// Load title
 void title_loader(int obj)
 {
    glTranslated(5,3,0);
@@ -180,6 +187,7 @@ void display()
    glEnable(GL_DEPTH_TEST);
    //  Undo previous transformations
    glLoadIdentity();
+
    //  Perspective - set eye position
    if (proj%2 == 0)
    {
@@ -190,55 +198,20 @@ void display()
       double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
+
    //  Pacman View
    else
-   {
-     // if(north == true){
-      
+   {  
       camera_switch = true;
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
+      double Ex = vertical-2;
+      double Ey = horizon;
       double Ez = +2*dim*Cos(th)*Cos(ph);
-      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
-      gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);     
-     // }
-     /* else if(west == true){
-      
-      camera_switch = true;
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
-      double Ez = +2*dim*Cos(th)*Cos(ph);
-      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
-      gluLookAt(horizon,vertical-4, 2, vertical,horizon,0 , 90,-Cos(ph),0);
-
-      }
-      else if(east == true){
-      
-      camera_switch = true;
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
-      double Ez = +2*dim*Cos(th)*Cos(ph);
-      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
-      gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);
-
-      }
-      else{
-
-      camera_switch = true;
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
-      double Ez = +2*dim*Cos(th)*Cos(ph);
-      //  gluLookAt(horizon-4,vertical, 2, horizon,vertical,0 , 90,Cos(ph),0); 
-      gluLookAt(vertical-4,horizon, 2, vertical,horizon,0 , 90,-Cos(ph),0);
-      
-      }*/
+      gluLookAt(Ey,Ex, 2, Ey,Ex+2,0 , 0,Cos(ph),0);   
    }
 
-   //  Draw light position as sphere (still no lighting here)
-   glColor3f(1,1,1);
+   //  Have over head lighting
    glPushMatrix();
    glTranslated(Position[0],Position[1],Position[2]);
-   glutSolidSphere(0.03,10,10);
    glPopMatrix();
 
    //  OpenGL should normalize normal vectors
@@ -262,13 +235,14 @@ void display()
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
 
-   //Break1
-   //  Draw the models
+   // Draw the models
+
    //Load Map
    glPushMatrix();
    map_loader(map);
    glPopMatrix();
 
+   // Load title
    glPushMatrix();
    title_loader(title);
    glPopMatrix();
@@ -284,32 +258,9 @@ void display()
    glTranslated(0,0,0);
    pacman_loader(pacman);
    glPopMatrix();
-   //printf("X position =  %d\n",horizon);
-   //  Draw axes - no lighting from here on
-   glDisable(GL_LIGHTING);
-   glColor3f(1,1,1);
-   if (axes)
-   {
-      glBegin(GL_LINES);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(len,0.0,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,len,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,0.0,len);
-      glEnd();
-      //  Label axes
-      glRasterPos3d(len,0.0,0.0);
-      Print("X");
-      glRasterPos3d(0.0,len,0.0);
-      Print("Y");
-      glRasterPos3d(0.0,0.0,len);
-      Print("Z");
-   }
+
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f Projection=%s",
-     th,ph,dim,proj?"Perpective":"Pacman");
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -345,12 +296,6 @@ void special(int key,int x,int y)
    //  Down arrow key - decrease elevation by 5 degrees
    else if (key == GLUT_KEY_DOWN)
       ph -= 5;
-   //  PageUp key - increase dim
-   else if (key == GLUT_KEY_PAGE_DOWN)
-      dim += 0.1;
-   //  PageDown key - decrease dim
-   else if (key == GLUT_KEY_PAGE_UP && dim>1)
-      dim -= 0.1;
    //  Keep angles to +/-360 degrees
    th %= 360;
    ph %= 360;
@@ -371,29 +316,38 @@ void key(unsigned char ch,int x,int y)
    //  Reset view angle
    else if (ch == '0')
       th = ph = 0;
+
+
    //  Control Movement
-   // West
+
+   // Moving West or Left
    else if (ch == 'a' || ch == 'A')
       {
+       
+         // Legal Moves detirmined by some set box colliders
          if(is_not_legal(horizon - .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false &&
             is_not_legal(horizon - .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false){          
             horizon -= speed;
            
       }
       else{
+            // Used for expert mode
             map_hit = true;
       }
-        // if(is_not_legal(horizon-3 - .25, vertical, -1.75,1.5,0,1.5,-1.75,1.55,0,1.55) == false)
-         //   horizon -= speed; 
+   
+       
+      //Parmeters to Rotate Pacman
          north = false;
          south = false;
          west = true;
       }
-   //East
+
+
+   //Moving East or Right
    else if (ch == 'd' || ch == 'D')
       {
-        
-
+         
+         // Legal Moves detirmined by some set box colliders
          if(is_not_legal(horizon + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false &&
             is_not_legal(horizon + .25, vertical, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
             is_not_legal(horizon + .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
@@ -405,33 +359,44 @@ void key(unsigned char ch,int x,int y)
             map_hit = true;
          
       }
-         
+   
+
+         //Parmeters to Rotate Pacman
          north = false;
          south = false;
          west = false;
       }  
-   //North 
+
+   //Moving North or up 
    else if (ch == 'w' || ch == 'W')
       {
+         // Standard View we need to have control that is standard for that
+         
+         // Legal Moves detirmined by some set box colliders
          if(is_not_legal(horizon, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
             is_not_legal(horizon, vertical + .25, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
             is_not_legal(horizon, vertical + .25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
             is_not_legal(horizon, vertical + .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
             is_not_legal(horizon, vertical + .25, -20, 4.75, 20,4.75, -10, 10, 20, 10) == false){ 
             vertical += speed;
-      }
+            }
             else{
-            map_hit = true;
+               map_hit = true;
          
-      }
+            }
+         
+         //Parmeters to Rotate Pacman
          north = true;
          south = false;
          west = false;
-    
       }
+
+
    //Down
    else if (ch == 's' || ch == 'S')
       {
+        
+         // Legal Moves detirmined by some set box colliders
         if(is_not_legal(horizon, vertical - .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
          is_not_legal(horizon, vertical - .25, -2.25,1,0,1,-2.25,2.15,0,2.15) == false &&
          is_not_legal(horizon, vertical -.25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
@@ -441,6 +406,9 @@ void key(unsigned char ch,int x,int y)
        else{
             map_hit = true;
       }
+   
+
+      //Parmeters to Rotate Pacman
          north = false;
          south = true;
          west = false;
@@ -451,21 +419,8 @@ void key(unsigned char ch,int x,int y)
    //  Toggle specular light
    else if (ch == 'l' || ch == 'L')
       spc = 1-spc;
-   //  Toggle light movement
-   else if (ch == 'u' || ch == 'U')
-      move = 1-move;
-   //  Move light
-   else if (ch == '[')
-      zh -= 1;
-   else if (ch == ']')
-      zh += 1;
-   //  Light elevation
-   else if (ch == '+')
-      Ylight += 0.1;
-   else if (ch == '-')
-      Ylight -= 0.1;
-   else if (ch == 'z')
-      horizon += 1;
+   else if(ch == 'e' || ch == 'E')
+      expert = true;
    //  Reproject
    Project(proj?fov:0,asp,dim);
    //  Tell GLUT it is necessary to redisplay the scene
