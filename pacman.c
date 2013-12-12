@@ -35,6 +35,8 @@ double horizon = 0;
 double vertical = 0; // The player moves
 int map;
 int title;
+int fruit_title;
+int ghost;
 double title_rot = -5;
 bool increase = true;
 double east_line = 0;
@@ -166,6 +168,20 @@ void title_loader(int obj)
    glCallList(obj);
 
 }
+void fruit_title_loader(int obj){
+   glTranslated(5,-3,0);
+   glScaled(.25,.25,.25);
+   //glScaled(.8,.8,.8);
+
+   glCallList(obj);
+}
+
+void ghost_loader(int obj){
+   glTranslated(-2.25,4,0);
+   glScaled(.05,.05,.05);
+   glRotatef(180, 0,1,0);
+   glCallList(obj);
+}
 
 void display()
 {
@@ -242,9 +258,20 @@ void display()
    map_loader(map);
    glPopMatrix();
 
+//LOAD THE HUD
    // Load title
    glPushMatrix();
    title_loader(title);
+   glPopMatrix();
+
+   //Load Fruit
+   glPushMatrix();
+   fruit_title_loader(fruit_title);
+   glPopMatrix();
+
+   glPushMatrix();
+   glTranslated(9,-5,0);
+   cherry_loader(cherry);
    glPopMatrix();
 
    //Load Cherry
@@ -257,6 +284,12 @@ void display()
    glPushMatrix();
    glTranslated(0,0,0);
    pacman_loader(pacman);
+   glPopMatrix();
+
+   //Load Blinky
+   glPushMatrix();
+   glTranslated(0,0,0);
+   ghost_loader(ghost);
    glPopMatrix();
 
    //  Display parameters
@@ -470,6 +503,8 @@ int main(int argc,char* argv[])
    pacman = LoadOBJ(argv[2]);
    map = LoadOBJ(argv[3]);
    title = LoadOBJ(argv[4]);
+   fruit_title = LoadOBJ(argv[5]);
+   ghost = LoadOBJ(argv[6]);
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();

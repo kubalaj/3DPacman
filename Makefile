@@ -36,4 +36,4 @@ love:
 	@echo "not war?"
 
 run:
-	./pacman cherry.obj pacman.obj map.obj title.obj
+	./pacman cherry.obj pacman.obj map.obj title.obj fruit.obj red_ghost_1.obj
