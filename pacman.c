@@ -50,6 +50,7 @@ double one_z;
 double two_x = 0;
 double two_y = 0;
 double two_z = 0;
+bool map_hit = false;
 
 // Hold the radius of points
 const RADIUS = 10;
@@ -68,6 +69,9 @@ bool camera_switch = false;
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 
+
+
+
 static bool is_not_legal(double x, double y, double bx1, double by1, double bx2, double by2, 
                                  double bx3, double by3, double bx4, double by4)
 {
@@ -78,6 +82,9 @@ static bool is_not_legal(double x, double y, double bx1, double by1, double bx2,
       return false;}
     
 }
+
+
+
 
 
 void pacman_loader(int obj)
@@ -120,7 +127,13 @@ void map_loader(int obj)
 {
    glTranslated(-3,0,0);
    glScaled(1.73,1.3,1);
-   glRotatef(90,1,0,0);
+   if(map_hit == true){
+      for(int i = 0; i < 10; i += .01){
+   glRotatef(90+i,1,0,0);
+   }
+   }
+   else
+      glRotatef(90,1,0,0);
    glCallList(obj);
 }
 void title_loader(int obj)
@@ -268,7 +281,7 @@ void display()
 
    //Load Pacman
    glPushMatrix();
-   glTranslated(-3,0,0);
+   glTranslated(0,0,0);
    pacman_loader(pacman);
    glPopMatrix();
    //printf("X position =  %d\n",horizon);
@@ -362,10 +375,16 @@ void key(unsigned char ch,int x,int y)
    // West
    else if (ch == 'a' || ch == 'A')
       {
-         if(is_not_legal(horizon-3 - .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)          
+         if(is_not_legal(horizon - .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false &&
+            is_not_legal(horizon - .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false){          
             horizon -= speed;
-         if(is_not_legal(horizon-3 + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)
-            horizon -= speed; 
+           
+      }
+      else{
+            map_hit = true;
+      }
+        // if(is_not_legal(horizon-3 - .25, vertical, -1.75,1.5,0,1.5,-1.75,1.55,0,1.55) == false)
+         //   horizon -= speed; 
          north = false;
          south = false;
          west = true;
@@ -375,9 +394,18 @@ void key(unsigned char ch,int x,int y)
       {
         
 
-         if(is_not_legal(horizon-3 + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)        
+         if(is_not_legal(horizon + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false &&
+            is_not_legal(horizon + .25, vertical, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
+            is_not_legal(horizon + .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
+            is_not_legal(horizon + .25, vertical, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
+            is_not_legal(horizon + .25, vertical, 3,2, 4,2,3,10,4,10) == false){        
             horizon += speed;
-
+      }
+       else{
+            map_hit = true;
+         
+      }
+         
          north = false;
          south = false;
          west = false;
@@ -385,17 +413,34 @@ void key(unsigned char ch,int x,int y)
    //North 
    else if (ch == 'w' || ch == 'W')
       {
-         if(is_not_legal(horizon-3, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false) 
+         if(is_not_legal(horizon, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
+            is_not_legal(horizon, vertical + .25, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
+            is_not_legal(horizon, vertical + .25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
+            is_not_legal(horizon, vertical + .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
+            is_not_legal(horizon, vertical + .25, -20, 4.75, 20,4.75, -10, 10, 20, 10) == false){ 
             vertical += speed;
+      }
+            else{
+            map_hit = true;
+         
+      }
          north = true;
          south = false;
          west = false;
+    
       }
    //Down
    else if (ch == 's' || ch == 'S')
       {
-        if(is_not_legal(horizon-3, vertical - .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false)
+        if(is_not_legal(horizon, vertical - .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
+         is_not_legal(horizon, vertical - .25, -2.25,1,0,1,-2.25,2.15,0,2.15) == false &&
+         is_not_legal(horizon, vertical -.25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
+         is_not_legal(horizon, vertical - .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false){
             vertical -= speed;
+      }
+       else{
+            map_hit = true;
+      }
          north = false;
          south = true;
          west = false;
