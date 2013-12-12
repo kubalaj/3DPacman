@@ -36,7 +36,8 @@ int map;
 int title;
 double title_rot = -5;
 bool increase = true;
-
+double east_line = 0;
+double test_collider = 0;
 // Collison
 // Distance between Objects
 double d = 0;
@@ -67,43 +68,80 @@ bool camera_switch = false;
  */
 
 
-bool circle_line(double line_p1_x, double line_p1_y, double line_p2_x, double line_p2_y, 
-   double center_x, double center_y, double rad)
-{
-//Transform to local
-   double local_p1_x = line_p1_x - center_x;
-   double local_p2_x = line_p2_x - center_x;
-   double local_p1_y = line_p1_y - center_y;
-   double local_p2_y = line_p2_y - center_y;
-   double diff_x = local_p2_x - local_p1_x;
-   double diff_y = local_p2_y - local_p2_y;
-
-
-   double a = pow((diff_x),2) + pow(diff_y,2);
-   double b = 2 * (diff_x*local_p1_x) + (diff_y*local_p1_y);
-   double c = pow(local_p1_x,2) + pow(local_p1_y,2) - pow(rad,2);
-   double delta = pow(b,2) - (4*a*c);
-   if(delta < 0)
-      return false;
+// Slope
+static double calc_m(double x1, double y1, double x2, double y2){
+   double m = 0;
+   if(x2-x1 != 0)
+      m = (y2-y1)/(x2-x1);
    else
-      return true; 
+      m = 0;
+return m;
+   }
 
+// Y intercept
+static double calc_b(double x, double y, double m){
+   double b = 0;
+   b = (m*x) + y;
+   b*-1;
+
+   return b;
 }
 
-// Detect the Distance
-/*bool collision(double x, double y)
-{
-   double diffx = x-two_x;
-   double diffy = y-two_y;
-   double diffz = 0-two_z;
 
-   d = sqrt(pow(diffx,2) + pow((diffy),2));
-   if(d <= p2radius + p1radius)
-      return true;
-   else
-      return false;
+static void cube(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th, double r, double g,
+                 double b)
+{
+   //  Save transformation
+   glPushMatrix();
+   //  Offset
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx,dy,dz);
+   //  Cube
+   glBegin(GL_QUADS);
+   //  Front
+   glColor3f(r,g,b);
+   glVertex3f(-1,-1, 1);
+   glVertex3f(+1,-1, 1);
+   glVertex3f(+1,+1, 1);
+   glVertex3f(-1,+1, 1);
+   //  Back
+   glColor3f(r,g,b);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(-1,+1,-1);
+   glVertex3f(+1,+1,-1);
+   //  Right
+   glColor3f(r,g,b);
+   glVertex3f(+1,-1,+1);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(+1,+1,-1);
+   glVertex3f(+1,+1,+1);
+   //  Left
+   glColor3f(r,g,b);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(-1,-1,+1);
+   glVertex3f(-1,+1,+1);
+   glVertex3f(-1,+1,-1);
+   //  Top
+   glColor3f(r,g,b);
+   glVertex3f(-1,+1,+1);
+   glVertex3f(+1,+1,+1);
+   glVertex3f(+1,+1,-1);
+   glVertex3f(-1,+1,-1);
+   //  Bottom
+   glColor3f(r,g,b);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(+1,-1,+1);
+   glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transformations
+   glPopMatrix();
 }
-*/
 
 
 void pacman_loader(int obj)
@@ -112,14 +150,14 @@ void pacman_loader(int obj)
    glColor3f(1,0,0);
    
 
-  // if(is_collision == false)
- //  {
+
       if(camera_switch==false)
          glTranslated(horizon,vertical,0);
       else
          glTranslated(vertical,horizon,0);
+   
+ 
 
-//   }
    glScalef(.08,.08,.08);
    //Rotate the Pacman
    if(north == true)
@@ -291,6 +329,7 @@ void display()
    cherry_loader(cherry);
    glPopMatrix();
 
+   cube(0,0,0 , 0.5,0.5,0.5 , 0, 1, 1, 1);
    //Load Pacman
    glPushMatrix();
    glTranslated(-3,0,0);
@@ -396,8 +435,9 @@ void key(unsigned char ch,int x,int y)
    //West
    else if (ch == 'd' || ch == 'D')
       {
-     if(circle_line(0,0,1,1,horizon,vertical,RADIUS) == true)
-            horizon += speed;
+         east_line = horizon - 3 + .25;
+         if(abs(east_line) - abs(test_collider) >= .01){
+            horizon += speed;}
          north = false;
          south = false;
          west = false;
