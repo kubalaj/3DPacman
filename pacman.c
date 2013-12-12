@@ -37,7 +37,8 @@ int title;
 double title_rot = -5;
 bool increase = true;
 double east_line = 0;
-double test_collider = 0;
+double collider_y_a = 1; 
+double collider_y_b = 0;
 // Collison
 // Distance between Objects
 double d = 0;
@@ -67,80 +68,15 @@ bool camera_switch = false;
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 
-
-// Slope
-static double calc_m(double x1, double y1, double x2, double y2){
-   double m = 0;
-   if(x2-x1 != 0)
-      m = (y2-y1)/(x2-x1);
-   else
-      m = 0;
-return m;
-   }
-
-// Y intercept
-static double calc_b(double x, double y, double m){
-   double b = 0;
-   b = (m*x) + y;
-   b*-1;
-
-   return b;
-}
-
-
-static void cube(double x,double y,double z,
-                 double dx,double dy,double dz,
-                 double th, double r, double g,
-                 double b)
+static bool is_not_legal(double x, double y, double bx1, double by1, double bx2, double by2, 
+                                 double bx3, double by3, double bx4, double by4)
 {
-   //  Save transformation
-   glPushMatrix();
-   //  Offset
-   glTranslated(x,y,z);
-   glRotated(th,0,1,0);
-   glScaled(dx,dy,dz);
-   //  Cube
-   glBegin(GL_QUADS);
-   //  Front
-   glColor3f(r,g,b);
-   glVertex3f(-1,-1, 1);
-   glVertex3f(+1,-1, 1);
-   glVertex3f(+1,+1, 1);
-   glVertex3f(-1,+1, 1);
-   //  Back
-   glColor3f(r,g,b);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,+1,-1);
-   glVertex3f(+1,+1,-1);
-   //  Right
-   glColor3f(r,g,b);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(+1,+1,+1);
-   //  Left
-   glColor3f(r,g,b);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,-1,+1);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(-1,+1,-1);
-   //  Top
-   glColor3f(r,g,b);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(+1,+1,+1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(-1,+1,-1);
-   //  Bottom
-   glColor3f(r,g,b);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(-1,-1,+1);
-   //  End
-   glEnd();
-   //  Undo transformations
-   glPopMatrix();
+   if((x < bx2 && x > bx1 && x > bx3 && x < bx4) && (y > by2 && y > by1 && y < by3 && y<by4)){
+      return true;
+   } 
+   else{ 
+      return false;}
+    
 }
 
 
@@ -158,7 +94,7 @@ void pacman_loader(int obj)
    
  
 
-   glScalef(.08,.08,.08);
+   glScalef(.055,.055,.055);
    //Rotate the Pacman
    if(north == true)
       glRotatef(90,0,0,1);
@@ -423,32 +359,25 @@ void key(unsigned char ch,int x,int y)
    else if (ch == '0')
       th = ph = 0;
    //  Control Movement
-   // East
+   // West
    else if (ch == 'a' || ch == 'A')
       {
-      //   if(collision(horizon,vertical) == true)
+         if(is_not_legal(horizon-3 - .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)          
             horizon -= speed;
+         if(is_not_legal(horizon-3 + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)
+            horizon -= speed; 
          north = false;
          south = false;
          west = true;
       }
-   //West
+   //East
    else if (ch == 'd' || ch == 'D')
       {
-         east_line = horizon - 3 + .1;
-         
-         //Along 0 axis
-         if(abs(east_line) - abs(test_collider) >= .1 || horizon-3 > 0){
+        
+
+         if(is_not_legal(horizon-3 + .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false)        
             horizon += speed;
-            }    
-         else{
-            if((vertical <= .25 || vertical >= 3.25) && 
-               (vertical >= -.01 || vertical <= -2) &&
-               (vertical >= -3 || vertical <= -5)){
-               horizon += speed;
-            }
-         }
-            
+
          north = false;
          south = false;
          west = false;
@@ -456,7 +385,7 @@ void key(unsigned char ch,int x,int y)
    //North 
    else if (ch == 'w' || ch == 'W')
       {
-      //   if(collision(horizon,vertical) == true)
+         if(is_not_legal(horizon-3, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false) 
             vertical += speed;
          north = true;
          south = false;
@@ -465,7 +394,7 @@ void key(unsigned char ch,int x,int y)
    //Down
    else if (ch == 's' || ch == 'S')
       {
-        // if(collision(horizon,vertical) == true)
+        if(is_not_legal(horizon-3, vertical - .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false)
             vertical -= speed;
          north = false;
          south = true;
