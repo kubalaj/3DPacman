@@ -329,7 +329,7 @@ void display()
    cherry_loader(cherry);
    glPopMatrix();
 
-   cube(0,0,0 , 0.5,0.5,0.5 , 0, 1, 1, 1);
+
    //Load Pacman
    glPushMatrix();
    glTranslated(-3,0,0);
@@ -436,14 +436,19 @@ void key(unsigned char ch,int x,int y)
    else if (ch == 'd' || ch == 'D')
       {
          east_line = horizon - 3 + .1;
-         if(abs(east_line) - abs(test_collider) >= .1){
+         
+         //Along 0 axis
+         if(abs(east_line) - abs(test_collider) >= .1 || horizon-3 > 0){
             horizon += speed;
             }    
          else{
-            if(vertical <= 1 || vertical >= 3){
+            if((vertical <= .25 || vertical >= 3.25) && 
+               (vertical >= -.01 || vertical <= -2) &&
+               (vertical >= -3 || vertical <= -5)){
                horizon += speed;
             }
-         }      
+         }
+            
          north = false;
          south = false;
          west = false;
