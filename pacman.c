@@ -435,9 +435,15 @@ void key(unsigned char ch,int x,int y)
    //West
    else if (ch == 'd' || ch == 'D')
       {
-         east_line = horizon - 3 + .25;
-         if(abs(east_line) - abs(test_collider) >= .01){
-            horizon += speed;}
+         east_line = horizon - 3 + .1;
+         if(abs(east_line) - abs(test_collider) >= .1){
+            horizon += speed;
+            }    
+         else{
+            if(vertical <= 1 || vertical >= 3){
+               horizon += speed;
+            }
+         }      
          north = false;
          south = false;
          west = false;
