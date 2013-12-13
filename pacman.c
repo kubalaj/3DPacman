@@ -13,8 +13,6 @@
 #include "CSCIx229.h"
 #include <stdbool.h>
 #include <math.h>
-//#include "SDL/SDL.h"
-//#include "SDL/SDL_mixer.h"
 
 int axes=1;       //  Display axes
 int mode=0;       //  Shader mode
@@ -37,6 +35,7 @@ int map;
 int title;
 int fruit_title;
 int ghost;
+int control;
 double title_rot = -5;
 bool increase = true;
 double east_line = 0;
@@ -55,13 +54,6 @@ double two_y = 0;
 double two_z = 0;
 bool map_hit = false;
 bool expert = false;
-double old_hor = 0;
-double old_ver = 0;
-
-// Hold the radius of points
-const RADIUS = 10;
-
-
 
 
 float RGBA[4] = {1,1,1,1};  //  Colors
@@ -97,7 +89,8 @@ void pacman_loader(int obj)
    glTranslated(horizon,vertical,0);
 
     if(map_hit == true && expert == true){
-      for(double i = 0; i>=-100; i-=.1){
+      double i;
+      for(i = 0; i>=-100; i-=.1){
             glTranslated(horizon,vertical-i,0);
        }  
    }
@@ -133,10 +126,11 @@ void map_loader(int obj)
    glTranslated(-3,0,0);
    glScaled(1.73,1.3,1);
    if(map_hit == true && expert == true){
-      for(int i = 0; i <= 10; i += 1){
+      int i;
+      for(i = 0; i <= 10; i += 1){
    glRotatef(90+i,1,0,0);
    }
-   for(int i = 10; i >= 0; i -= 1){
+   for(i = 10; i >= 0; i -= 1){
    glRotatef(90-i,1,0,0);
    }
    }
@@ -171,13 +165,18 @@ void title_loader(int obj)
 void fruit_title_loader(int obj){
    glTranslated(5,-3,0);
    glScaled(.25,.25,.25);
-   //glScaled(.8,.8,.8);
-
    glCallList(obj);
 }
 
+void control_loader(int obj){
+	glTranslated(5,0,0);
+	glScaled(.25,.25,.25);
+	glRotatef(-15,0,1,0);
+	glCallList(obj);
+	}
+
 void ghost_loader(int obj){
-   glTranslated(-2.25,4,0);
+   glTranslated(2,4,0);
    glScaled(.05,.05,.05);
    glRotatef(180, 0,1,0);
    glCallList(obj);
@@ -185,15 +184,13 @@ void ghost_loader(int obj){
 
 void display()
 {
-   const double len=2.0;  //  Length of axes
    //  Light position and colors
    float Emission[]  = {0.0,0.0,0.0,1.0};
    float Ambient[]   = {1,1,1,1.0};
    float Diffuse[]   = {1.0,1.0,1.0,1.0};
    float Specular[]  = {spc,spc,spc,1.0};
    float Position[]  = {-3,0,15,1.0};
-   float Position_1[]  = {-3,10,0,1.0};
-   //float Position[]  = {90,0,0,1.0};
+
    float Shinyness[] = {14};
 
    //  Erase the window and the depth buffer
@@ -221,7 +218,6 @@ void display()
       camera_switch = true;
       double Ex = vertical-2;
       double Ey = horizon;
-      double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ey,Ex, 2, Ey,Ex+2,0 , 0,Cos(ph),0);   
    }
 
@@ -268,7 +264,13 @@ void display()
    glPushMatrix();
    fruit_title_loader(fruit_title);
    glPopMatrix();
-
+   
+   //Load the Controls
+   glPushMatrix();
+   control_loader(control);
+   glPopMatrix();
+   
+//Load another cherry
    glPushMatrix();
    glTranslated(9,-5,0);
    cherry_loader(cherry);
@@ -359,10 +361,21 @@ void key(unsigned char ch,int x,int y)
        
          // Legal Moves detirmined by some set box colliders
          if(is_not_legal(horizon - .25, vertical, -1,.35, .5, .35, -1,3.25,.5,3.25) == false &&
-            is_not_legal(horizon - .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false){          
+            is_not_legal(horizon - .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false && 
+            is_not_legal(horizon - .25, vertical, -30, -30, -9, -30, -30,30,-9,30) == false &&
+            is_not_legal(horizon - .25, vertical, -1,-2, .5,-2,-1.5,0,.5,0) == false &&
+            is_not_legal(horizon+ .25, vertical, .5,-4, 2.5,-4, .5,-2, 2.5,-2) == false &&
+            is_not_legal(horizon- .25, vertical, .5,-3, 2.5,-3, .5,-2, 2.5,-2) == false &&
+            is_not_legal(horizon- .25, vertical, -8,-4, -6.75,-4, -8,-2, -6.75,-2) == false &&
+            is_not_legal(horizon - .25, vertical, -6.25,.35, -5.25, .35, -6.25,3.25,-5.25,3.25) == false &&
+            //Upsiode down T Repeats twice more
+            is_not_legal(horizon - .25, vertical, -3.25, 1.5, -2.75, 1.5, -3.25,3.5,-2.75,3.5) == false &&
+            is_not_legal(horizon - .25, vertical, -3.25, -3.0, -2.75, -3.0, -3.25,-1,-2.75,-1) == false &&
+            is_not_legal(horizon - .25, vertical, -3.25, -5.0, -2.75, -5.0, -3.25,-3,-2.75,-3) == false)
+            {          
             horizon -= speed;
            
-      }
+			}
       else{
             // Used for expert mode
             map_hit = true;
@@ -385,7 +398,19 @@ void key(unsigned char ch,int x,int y)
             is_not_legal(horizon + .25, vertical, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
             is_not_legal(horizon + .25, vertical, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
             is_not_legal(horizon + .25, vertical, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
-            is_not_legal(horizon + .25, vertical, 3,2, 4,2,3,10,4,10) == false){        
+            is_not_legal(horizon + .25, vertical, 3,2, 4,2,3,10,4,10) == false &&
+            is_not_legal(horizon + .25, vertical, 3,-30, 30,-30,3,30,30,10) == false &&
+            is_not_legal(horizon + .25, vertical, .5,-2, 2.25,-2,.5,0,2.25,0) == false &&
+            is_not_legal(horizon + .25, vertical, -1,-2, 0,-2,-1,0,0,0) == false &&
+            is_not_legal(horizon+ .25, vertical, 2,-4, 10,-4,2,-3, 10,-3) == false &&
+            is_not_legal(horizon+ .25, vertical, .5,-4, 1.5,-4, .5,-2, 1.5,-2) == false &&
+            is_not_legal(horizon+ .25, vertical, .5,-3, 1.5,-3, .5,-2, 2.5,-2) == false &&
+            is_not_legal(horizon+ .25, vertical, -8.25,-4, -7.25,-4, -8.25,-2, -7.25,-2) == false &&
+            is_not_legal(horizon - .25, vertical, -7,.35, -5.25, .35, -7,3.25,-5.25,3.25) == false &&
+            //Upsiode down T Repeats twice more
+            is_not_legal(horizon + .25, vertical, -3.75, 1.5, -2.75, 1.5, -3.75,3.5,-2.75,3.5) == false &&
+            is_not_legal(horizon + .25, vertical, -3.75, -3.0, -2.75, -3.0, -3.75,-1,-2.75,-1) == false &&
+            is_not_legal(horizon + .25, vertical, -3.75, -5.0, -2.75, -5.0, -3.75,-3,-2.75,-3) == false){        
             horizon += speed;
       }
        else{
@@ -406,11 +431,37 @@ void key(unsigned char ch,int x,int y)
          // Standard View we need to have control that is standard for that
          
          // Legal Moves detirmined by some set box colliders
-         if(is_not_legal(horizon, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
+         if(// Long part of -|
+			is_not_legal(horizon, vertical + .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
+            // Short Part of -|
             is_not_legal(horizon, vertical + .25, -2.25,1.25,0,1.25,-2.25,2,0,2) == false &&
-            is_not_legal(horizon, vertical + .25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
+            //?
+            //is_not_legal(horizon, vertical + .25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
+            //Top Outlet
             is_not_legal(horizon, vertical + .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
-            is_not_legal(horizon, vertical + .25, -20, 4.75, 20,4.75, -10, 10, 20, 10) == false){ 
+            // UPPER BOUND
+            is_not_legal(horizon, vertical + .25, -20, 4.75, 20,4.75, -10, 10, 20, 10) == false &&
+            //is_not_legal(horizon, vertical + .25, .5,-2, 10,-2,.5,0,10,0) == false &&
+            is_not_legal(horizon, vertical +.25, -1,-2, 0,-2,-1,0,0,0) == false &&
+            // Lower Bound of Entry
+            is_not_legal(horizon, vertical +.25, -.25,-3, .25,-3,.25,-1.75, .25,-1.75) == false &&
+            // below -|
+            is_not_legal(horizon, vertical +.25, 2,-4, 10,-4,2,-3, 10,-3) == false &&
+            // Lower |-
+            is_not_legal(horizon+ .25, vertical, .75,-4.5, 2,-4.5, .75,-2, 2,-2) == false &&
+            // lower |-
+            is_not_legal(horizon, vertical + .25, .5,-3, 2.5,-3, .5,-2, 2.5,-2) == false &&
+            //Lower entry bound
+            is_not_legal(horizon, vertical +.25, -8.25,-4, -7.25,-4, -8.25,-2, -7.25,-2) == false &&
+            is_not_legal(horizon, vertical + .25, -7.5, .25, -7.25, .25, -7.5, 2.25, -7.25, 2.25) == false &&
+            is_not_legal(horizon, vertical + .25, -7,.35, -5.25, .35, -7,3.25,-5.25,3.25) == false &&
+            //Upsiode down T Repeats twice more
+            is_not_legal(horizon, vertical+ .25, -3.75, 1.5, -2.75, 1.5, -3.75,3.5,-2.75,3.5) == false &&
+            is_not_legal(horizon, vertical+ .25, -3.75, -3.0, -2.75, -3.0, -3.75,-1,-2.75,-1) == false &&
+            is_not_legal(horizon, vertical+ .25, -3.75, -5.0, -2.75, -5.0, -3.75,-3,-2.75,-3) == false &&
+            is_not_legal(horizon, vertical+ .25, -5.25,2.5,-1,2.5,-5.25, 4, -1, 4) == false &&
+            is_not_legal(horizon, vertical+ .25, -5.25,-2,-1,-2,-5.25, -.5, -1, .5) == false &&
+            is_not_legal(horizon, vertical+ .25, -5.25,-4,-1,-4,-5.25, -2.5, -1, 2.5) == false){ 
             vertical += speed;
             }
             else{
@@ -433,7 +484,19 @@ void key(unsigned char ch,int x,int y)
         if(is_not_legal(horizon, vertical - .25, -1, .35, .5, .35, -1,3.25,.5,3.25) == false &&
          is_not_legal(horizon, vertical - .25, -2.25,1,0,1,-2.25,2.15,0,2.15) == false &&
          is_not_legal(horizon, vertical -.25, -5, -1, -1.25, -1, -5,1.25,-1.25,1.25) == false &&
-         is_not_legal(horizon, vertical - .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false){
+         is_not_legal(horizon, vertical - .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
+         is_not_legal(horizon, vertical - .25, .5, .25, 3.75, .25, .5, 2.25, 3.75, 2.25) == false &&
+         is_not_legal(horizon, vertical - .25, -30, -30, 30, -30, -9, -5, 30, -5) == false &&
+         is_not_legal(horizon, vertical - .25, .5,-2, 10,-2,.5,1,10,1) == false &&
+         is_not_legal(horizon, vertical -.25, -1,-2, 0,-2,-1,0,0,0) == false &&
+         is_not_legal(horizon, vertical -.25, -1,-2, 0,-2,-1,0,0,0) == false &&
+         is_not_legal(horizon, vertical -.25, -2.25,-2.5, 0,-2.5,-2.25,-1.75, 0,-1.75) == false &&
+         is_not_legal(horizon, vertical -.25, 2,-4, 10,-4,2,-3, 10,-3) == false &&
+         is_not_legal(horizon + .25, vertical, .75,-4.5, 2,-4.5, .75,-1.75, 2,-1.75) == false &&
+         is_not_legal(horizon, vertical - .25, .5,-3, 2.5,-3, .5,-2, 2.5,-2) == false &&
+         is_not_legal(horizon, vertical -.25, -8.25,-4, -7.25,-4, -8.25,-2, -7.25,-2) == false &&
+         is_not_legal(horizon, vertical -.25, -6,.35, -5.25, .35, -6,3.25,-5.25,3.25) == false
+          ){
             vertical -= speed;
       }
        else{
@@ -499,12 +562,13 @@ int main(int argc,char* argv[])
    if (argc>=6) RGBA[1] = strtod(argv[4],NULL);
    if (argc>=6) RGBA[2] = strtod(argv[5],NULL);
    //  Load object
-   cherry = LoadOBJ(argv[1]);
-   pacman = LoadOBJ(argv[2]);
-   map = LoadOBJ(argv[3]);
-   title = LoadOBJ(argv[4]);
-   fruit_title = LoadOBJ(argv[5]);
-   ghost = LoadOBJ(argv[6]);
+   cherry = LoadOBJ("cherry.obj");
+   pacman = LoadOBJ("pacman.obj");
+   map = LoadOBJ("map.obj");
+   title = LoadOBJ("title.obj");
+   fruit_title = LoadOBJ("fruit.obj");
+   ghost = LoadOBJ("red_ghost_1.obj");
+   control = LoadOBJ("controls.obj");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
